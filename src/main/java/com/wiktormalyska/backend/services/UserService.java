@@ -1,7 +1,9 @@
 package com.wiktormalyska.backend.services;
 
+import com.wiktormalyska.backend.dao.IRoleRepository;
 import com.wiktormalyska.backend.dao.IUserRepository;
 import com.wiktormalyska.backend.dto.UserDto;
+import com.wiktormalyska.backend.model.Role;
 import com.wiktormalyska.backend.model.User;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +14,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Optional;
 
 @Service
 public class UserService {
     private final IUserRepository userRepository;
+    private final IRoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     @Autowired
-    public UserService(IUserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(IUserRepository userRepository, PasswordEncoder passwordEncoder, IRoleRepository roleRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Transactional
@@ -45,30 +50,39 @@ public class UserService {
 
     @Transactional
     public UserDto getUser(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user != null)
-            return new UserDto(user);
-        else
-            return null;
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return new UserDto(user);
     }
 
     @Transactional
-    public String addUser(User user){
+    public void addUser(User user){
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
-        User checkUser = userRepository.findByUsername(user.getUsername());
-        if (checkUser != null)
-            return "user already exists";
+        Optional<User> checkUser = userRepository.findByUsername(user.getUsername());
+        if (checkUser.isPresent())
+            throw new IllegalArgumentException("User already exists");
         userRepository.save(user);
-        return "user added successfully";
     }
 
     @Transactional
-    public String removeUser(User user){
-        User checkUser = userRepository.findByUsername(user.getUsername());
-        if (checkUser == null)
-            return "user does not exist";
+    public void removeUser(User user){
+        User checkUser = userRepository.findByUsername(user.getUsername()).orElseThrow(() -> new IllegalArgumentException("User not found"));
         userRepository.deleteById(user.getId());
-        return "user removed successfully";
+    }
+
+    @Transactional
+    public void assignRole(Long userId, String roleName){
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Role role = roleRepository.findByName(roleName).orElseThrow(() -> new IllegalArgumentException("Role not found"));
+        user.getRoles().add(role);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void removeRole(Long userId, String roleName){
+        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        Role role = roleRepository.findByName(roleName).orElseThrow(() -> new IllegalArgumentException("Role not found"));
+        user.getRoles().remove(role);
+        userRepository.save(user);
     }
 }

@@ -34,15 +34,12 @@ public class UserController {
                 userDto.getUsername(),
                 userDto.getPassword()
         );
-        String result = userService.addUser(newUser);
-
-        if ("user already exists".equals(result)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
-        } else if ("user added successfully".equals(result)) {
-            return ResponseEntity.status(HttpStatus.CREATED).body("User added successfully");
+        try {
+            userService.addUser(newUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
-
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        return ResponseEntity.ok("User added successfully");
     }
 
     @GetMapping("/get/{userId}")
@@ -67,9 +64,19 @@ public class UserController {
 
     @DeleteMapping("/remove/{userId}")
     public ResponseEntity<String> removeUser(@PathVariable Long userId) {
-        UserDto userToRemove = userService.getUser(userId);
-        if (userToRemove == null) return ResponseEntity.badRequest().body("user does not exist");
-        return ResponseEntity.ok(userService.removeUser(userToRemove.toUser()));
+        try {
+            userService.getUser(userId);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
+        try {
+            UserDto userDto = userService.getUser(userId);
+            User user = userDto.toUser();
+            userService.removeUser(user);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
+        return ResponseEntity.ok("User removed successfully");
     }
 
 }

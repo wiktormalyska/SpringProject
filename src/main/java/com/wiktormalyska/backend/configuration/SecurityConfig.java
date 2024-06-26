@@ -28,9 +28,17 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorizeRequests ->
-                authorizeRequests
-                        .anyRequest().permitAll()
-        );
+                        authorizeRequests
+                                .requestMatchers("/actuator/**").permitAll()
+                                .requestMatchers("/api/items/all").permitAll()
+                                .requestMatchers("/api/items/get").permitAll()
+                                .requestMatchers("/api/items/add").hasAuthority("ADMIN")
+                                .requestMatchers("/api/items/remove").hasAuthority("ADMIN")
+                                .requestMatchers("/api/users/**").hasAuthority("ADMIN")
+                                .anyRequest().authenticated()
+
+                )
+                .httpBasic(Customizer.withDefaults());
         return http.build();
     }
 }
