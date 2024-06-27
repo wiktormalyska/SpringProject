@@ -35,20 +35,18 @@ public class ItemService {
     }
 
     @Transactional
-    public String addItem(Item item){
-        Item checkItem = itemRepository.findByName(item.getName());
+    public void addItem(Item item){
+        Item checkItem = itemRepository.findByName(item.getName()).orElse(null);
         if (checkItem != null)
-            return "item already exists";
+            throw new IllegalArgumentException("Item already exists");
         itemRepository.save(item);
-        return "item added successfully";
     }
 
     @Transactional
-    public String removeItem(Item item){
-        Item checkItem = itemRepository.findByName(item.getName());
+    public void removeItem(Item item){
+        Item checkItem = itemRepository.findByName(item.getName()).orElse(null);
         if (checkItem == null)
-            return "item does not exist";
+            throw new IllegalArgumentException("Item does not exist");
         itemRepository.deleteById(item.getId());
-        return "item removed successfully";
     }
 }

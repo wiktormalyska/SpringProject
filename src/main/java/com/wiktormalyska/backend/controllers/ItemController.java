@@ -18,6 +18,7 @@ public class ItemController {
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
     }
+
     private final ItemService itemService;
 
     @GetMapping("/all")
@@ -28,20 +29,18 @@ public class ItemController {
 
     @PostMapping("/add")
     public ResponseEntity<String> addItem(@RequestBody CreateItemDto item) {
-        Item newItem = new Item(
-                item.getName(),
-                item.getPrice(),
-                item.getDescription()
-        );
-        switch (itemService.addItem(newItem)) {
-            case "item already exists" -> {
-                return ResponseEntity.badRequest().body("Item already exists");
-            }
-            case "item added successfully" -> {
-                return ResponseEntity.ok("Item added successfully");
-            }
+        new Item();
+        Item newItem = Item.builder()
+                .description(item.getDescription())
+                .price(item.getPrice())
+                .name(item.getName())
+                .build();
+        try {
+            itemService.addItem(newItem);
+        }catch (Exception e){
+                return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.status(500).body("An unexpected error occurred");
+        return ResponseEntity.ok("Item added successfully");
     }
 
     @GetMapping("/get/{item}")
@@ -54,13 +53,18 @@ public class ItemController {
         }
 
     }
-    @DeleteMapping("/remove/{item}")
-    public ResponseEntity<String> removeItem(@PathVariable Long item) {
-        ItemDto itemToRemoveDto = itemService.getItem(item);
-        if (itemToRemoveDto== null) return ResponseEntity.badRequest().body("item does not exist");
-        Item itemToRemove = itemToRemoveDto.toItem();
-        itemService.removeItem(itemToRemove);
-        return ResponseEntity.ok("successfully removed item");
+
+    @DeleteMapping("/remove/{itemId}")
+    public ResponseEntity<String> removeItem(@PathVariable Long itemId) {
+
+        try {
+            ItemDto item = itemService.getItem(itemId);
+            Item itemToRemove = item.toItem();
+            itemService.removeItem(itemToRemove);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+        return ResponseEntity.ok("Successfully removed item");
     }
 
 }

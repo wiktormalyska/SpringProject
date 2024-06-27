@@ -1,9 +1,6 @@
     package com.wiktormalyska.backend.model;
 
-    import lombok.AllArgsConstructor;
-    import lombok.Getter;
-    import lombok.NoArgsConstructor;
-    import lombok.Setter;
+    import lombok.*;
 
     import jakarta.persistence.*;
 
@@ -12,6 +9,7 @@
     @Entity
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public class Item {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)

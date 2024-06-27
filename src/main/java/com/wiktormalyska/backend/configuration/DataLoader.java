@@ -9,6 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class DataLoader implements CommandLineRunner {
     @Autowired
@@ -22,15 +24,19 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        Role adminRole = new Role();
-        adminRole.setName("ADMIN");
+        new Role();
+        Role adminRole = Role.builder()
+                .name("ADMIN")
+                .build();
         roleRepository.save(adminRole);
 
-        User admin = new User();
-        admin.setUsername("admin");
-        admin.setEmail("admin@admin");
-        admin.setPassword(passwordEncoder.encode("admin"));
-        admin.getRoles().add(adminRole);
+        new User();
+        User admin = User.builder()
+                .username("admin")
+                .email("admin@admin")
+                .password(passwordEncoder.encode("admin"))
+                .roles(List.of(adminRole))
+                .build();
         userRepository.save(admin);
     }
 }
