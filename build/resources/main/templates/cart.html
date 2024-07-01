@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Twój Koszyk</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<h1>Twój Koszyk</h1>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Nazwa</th>
+        <th>Ilość</th>
+        <th>Cena</th>
+        <th>Łączna Cena</th>
+        <th>Akcje</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="entry : ${cart.items}">
+        <td th:text="${entry.value.item.id}"></td>
+        <td th:text="${entry.value.item.name}"></td>
+        <td th:text="${entry.value.quantity}"></td>
+        <td th:text="${entry.value.item.price}"></td>
+        <td th:text="${entry.value.item.price * entry.value.quantity}"></td>
+        <td>
+            <form th:action="@{/cart/remove/{itemId}(itemId=${entry.value.item.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit">Usuń</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+<p>Łączna cena: <span th:text="${total}"></span></p>
+<form th:action="@{/home}" method="get">
+    <button type="submit">Powrót do Sklepu</button>
+</form>
+</body>
+</html>

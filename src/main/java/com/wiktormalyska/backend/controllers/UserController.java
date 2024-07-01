@@ -2,6 +2,7 @@ package com.wiktormalyska.backend.controllers;
 import com.wiktormalyska.backend.dto.CreateUserDto;
 import com.wiktormalyska.backend.dto.UserDto;
 import com.wiktormalyska.backend.model.User;
+import com.wiktormalyska.backend.services.RoleService;
 import com.wiktormalyska.backend.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,9 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
+    @Autowired
+    public RoleService roleService;
 
 
     @GetMapping("/all")
